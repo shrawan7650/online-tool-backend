@@ -14,7 +14,7 @@ import filesRoutes from './routes/files.js';
 import schedulerRoutes from './routes/scheduler.js';
 import notesRoutes from './routes/notes.js';
 import authRoutes from './routes/auth.js';
-import subscriptionRoutes from './routes/subscription.js';
+// import subscriptionRoutes from './routes/subscription.js';
 import healthRoutes from './routes/health.js';
 import metricsRoutes from './routes/metrics.js';
 import { setupSwagger } from './config/swagger.js';
@@ -88,7 +88,7 @@ setupSwagger(app);
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/subscription', subscriptionRoutes);
+// app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/clipboard', clipboardRoutes);
 app.use('/api/tools', toolsRoutes);
 app.use('/api/files', filesRoutes);
