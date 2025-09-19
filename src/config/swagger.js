@@ -1,5 +1,5 @@
 import swaggerUi from 'swagger-ui-express';
-import type { Application } from 'express';
+
 
 const swaggerDocument = {
   openapi: '3.0.0',
@@ -179,7 +179,7 @@ const swaggerDocument = {
   }
 };
 
-export const setupSwagger = (app: Application): void => {
+export const setupSwagger = (app) => {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Online Tools API Documentation'

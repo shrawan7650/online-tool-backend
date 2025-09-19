@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
-import { OAuth2Client } from 'google-auth-library';
 import { User } from '../models/User.js';
-import { authMiddleware, AuthRequest } from '../middleware/auth.js';
+import { authMiddleware } from '../middleware/auth.js';
 import asyncHandler from 'express-async-handler';
 import { z } from 'zod';
 import pino from 'pino';
@@ -10,8 +9,6 @@ import { googleOAuth } from '../config/googlOAuth.js';
 
 const router = Router();
 const logger = pino();
-
-
 
 // Validation schemas
 const GoogleTokenSchema = z.object({
@@ -21,12 +18,10 @@ const GoogleTokenSchema = z.object({
 // Google OAuth login
 router.post('/google', asyncHandler(async (req, res) => {
   const { token } = GoogleTokenSchema.parse(req.body);
-    console.log("Received Google token:", token);
-    const googleData: any = await googleOAuth(req, res);
-  try {
- 
- 
+  console.log("Received Google token:", token);
 
+  try {
+    const googleData = await googleOAuth(req, res);
     const { sub: googleId, email, name, picture } = googleData;
     console.log("Google payload:", googleData);
 
@@ -44,15 +39,12 @@ router.post('/google', asyncHandler(async (req, res) => {
     let user = await User.findOne({ googleId });
     
     if (!user) {
-      // Check if user exists with same email
       const existingUser = await User.findOne({ email });
       if (existingUser) {
-        // Link Google account to existing user
         existingUser.googleId = googleId;
         existingUser.profilePicture = picture || existingUser.profilePicture;
         user = await existingUser.save();
       } else {
-        // Create new user
         user = new User({
           googleId,
           email,
@@ -65,7 +57,6 @@ router.post('/google', asyncHandler(async (req, res) => {
         logger.info(`New user registered: ${email}`);
       }
     } else {
-      // Update existing user info
       user.name = name;
       user.profilePicture = picture || user.profilePicture;
       await user.save();
@@ -79,7 +70,7 @@ router.post('/google', asyncHandler(async (req, res) => {
         isPro: user.isPro,
         isMaxPro: user.isMaxPro
       },
-      process.env.JWT_SECRET!,
+      process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
 
@@ -111,9 +102,10 @@ router.post('/google', asyncHandler(async (req, res) => {
 }));
 
 // Get current user
-router.get('/me', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const user = req.user!;
-  
+router.get('/me', authMiddleware, asyncHandler(async (req, res) => {
+  const user = req.user;
+  if (!user) return res.status(401).json({ ok: false });
+
   res.json({
     ok: true,
     user: {
@@ -130,10 +122,10 @@ router.get('/me', authMiddleware, asyncHandler(async (req: AuthRequest, res) => 
 }));
 
 // Refresh token
-router.post('/refresh', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const user = req.user!;
+router.post('/refresh', authMiddleware, asyncHandler(async (req, res) => {
+  const user = req.user;
+  if (!user) return res.status(401).json({ ok: false });
 
-  // Generate new JWT
   const token = jwt.sign(
     { 
       userId: user._id,
@@ -141,7 +133,7 @@ router.post('/refresh', authMiddleware, asyncHandler(async (req: AuthRequest, re
       isPro: user.isPro,
       isMaxPro: user.isMaxPro
     },
-    process.env.JWT_SECRET!,
+    process.env.JWT_SECRET,
     { expiresIn: '7d' }
   );
 
@@ -161,7 +153,7 @@ router.post('/refresh', authMiddleware, asyncHandler(async (req: AuthRequest, re
   });
 }));
 
-// Logout (client-side token removal)
+// Logout
 router.post('/logout', (req, res) => {
   res.json({
     ok: true,

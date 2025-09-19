@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import { pinoHttp } from 'pino-http';
+import pinoHttp from 'pino-http';
 import pino from 'pino';
 import { connectDB } from './config/database.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -29,10 +29,13 @@ const PORT = process.env.PORT || 8080;
 // Logger
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
-  transport: process.env.NODE_ENV === 'development' ? {
-    target: 'pino-pretty',
-    options: { colorize: true }
-  } : undefined
+  transport:
+    process.env.NODE_ENV === 'development'
+      ? {
+          target: 'pino-pretty',
+          options: { colorize: true },
+        }
+      : undefined,
 });
 
 // Connect to MongoDB
@@ -42,18 +45,22 @@ connectDB();
 app.set('trust proxy', 1);
 
 // Security middleware
-app.use(helmet({
-  contentSecurityPolicy: false, // Allow for API usage
-  crossOriginEmbedderPolicy: false
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Allow for API usage
+    crossOriginEmbedderPolicy: false,
+  })
+);
 
 // CORS
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN_DEVELOPMENT || process.env.CORS_ORIGIN_PRODUCTION || '*',
+    credentials: true,
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // Body parsing and compression
 app.use(compression());
@@ -68,17 +75,17 @@ app.use(pinoHttp({ logger }));
 
 // Rate limiting
 const globalLimiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000'), // 1 minute
-  max: parseInt(process.env.RATE_LIMIT_MAX || '100'), // 100 requests per window
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10), // 1 minute
+  max: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // 100 requests per window
   message: {
     ok: false,
     error: {
       code: 'RATE_LIMIT_EXCEEDED',
-      message: 'Too many requests, please try again later.'
-    }
+      message: 'Too many requests, please try again later.',
+    },
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 app.use(globalLimiter);
@@ -104,7 +111,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     status: 'running',
     documentation: '/docs',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -114,8 +121,8 @@ app.use('*', (req, res) => {
     ok: false,
     error: {
       code: 'NOT_FOUND',
-      message: 'Endpoint not found'
-    }
+      message: 'Endpoint not found',
+    },
   });
 });
 

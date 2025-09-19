@@ -3,20 +3,15 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon --exec tsx src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "nodemon src/server.js",
+    "build": "",
+    "start": "node src/server.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "seed": "tsx src/scripts/seed.ts"
+    "lint": "eslint src --ext .js",
+    "format": "prettier --write \"src/**/*.js\""
   },
   "dependencies": {
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/passport": "^1.0.17",
-    "@types/passport-google-oauth20": "^2.0.16",
-    "@types/passport-jwt": "^4.0.1",
     "bcrypt": "^5.1.1",
     "cloudinary": "^2.7.0",
     "compression": "^1.7.4",
@@ -45,24 +40,11 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
-    "@types/compression": "^1.7.5",
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jest": "^29.5.8",
-    "@types/node": "^20.10.5",
-    "@types/supertest": "^2.0.16",
-    "@types/swagger-ui-express": "^4.1.6",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.55.0",
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
     "pino-pretty": "^13.1.1",
     "prettier": "^3.1.1",
-    "supertest": "^6.3.3",
-    "ts-jest": "^29.1.1",
-    "tsx": "^4.6.2",
-    "typescript": "^5.9.2"
+    "supertest": "^6.3.3"
   }
 }

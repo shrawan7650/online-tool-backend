@@ -27,25 +27,25 @@ const MetricSchema = z.object({
 });
 
 // In-memory storage (replace with proper database in production)
-const metrics: any[] = [];
+const metrics = [];
 
 router.post('/', metricsLimiter, asyncHandler(async (req, res) => {
   const validatedData = MetricSchema.parse(req.body);
-  
+
   // Store metric (anonymized)
   const metric = {
     ...validatedData,
-    ip: req.ip?.substring(0, req.ip.lastIndexOf('.')) + '.xxx', // Anonymize IP
+    ip: req.ip ? req.ip.substring(0, req.ip.lastIndexOf('.')) + '.xxx' : 'unknown',
     timestamp: Date.now()
   };
-  
+
   metrics.push(metric);
-  
+
   // Keep only last 10000 metrics
   if (metrics.length > 10000) {
     metrics.splice(0, metrics.length - 10000);
   }
-  
+
   res.status(201).json({ ok: true });
 }));
 
@@ -54,10 +54,10 @@ router.get('/', (req, res) => {
   const now = Date.now();
   const oneHour = 60 * 60 * 1000;
   const oneDay = 24 * oneHour;
-  
+
   const hourlyMetrics = metrics.filter(m => now - m.timestamp < oneHour);
   const dailyMetrics = metrics.filter(m => now - m.timestamp < oneDay);
-  
+
   res.json({
     total: metrics.length,
     lastHour: hourlyMetrics.length,
@@ -66,17 +66,17 @@ router.get('/', (req, res) => {
   });
 });
 
-function getTopPages(metrics: any[], limit: number) {
-  const counts: { [path: string]: number } = {};
-  
+function getTopPages(metrics, limit) {
+  const counts = {};
+
   metrics.forEach(m => {
     if (m.type === 'pageview') {
       counts[m.path] = (counts[m.path] || 0) + 1;
     }
   });
-  
+
   return Object.entries(counts)
-    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .sort(([, a], [, b]) => b - a)
     .slice(0, limit)
     .map(([path, count]) => ({ path, count }));
 }

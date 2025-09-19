@@ -3,7 +3,7 @@ import pino from 'pino';
 
 const logger = pino();
 
-export const connectDB = async (): Promise<void> => {
+export const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI;
     

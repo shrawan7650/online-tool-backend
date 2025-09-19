@@ -1,24 +1,9 @@
-import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import pino from 'pino';
 
 const logger = pino();
 
-interface ApiError {
-  ok: false;
-  error: {
-    code: string;
-    message: string;
-    details?: any;
-  };
-}
-
-export const errorHandler = (
-  err: Error | ZodError,
-  req: Request,
-  res: Response<ApiError>,
-  next: NextFunction
-): void => {
+export const errorHandler = (err, req, res, next) => {
   // Log the error
   logger.error(err, 'Unhandled error');
 
@@ -48,7 +33,7 @@ export const errorHandler = (
   }
 
   // Handle duplicate key errors
-  if (err.name === 'MongoServerError' && (err as any).code === 11000) {
+  if (err.name === 'MongoServerError' && err.code === 11000) {
     res.status(409).json({
       ok: false,
       error: {
@@ -60,8 +45,8 @@ export const errorHandler = (
   }
 
   // Default error
-  const statusCode = (err as any).statusCode || 500;
-  const code = (err as any).code || 'INTERNAL_SERVER_ERROR';
+  const statusCode = err.statusCode || 500;
+  const code = err.code || 'INTERNAL_SERVER_ERROR';
   const message = err.message || 'An unexpected error occurred';
 
   res.status(statusCode).json({

@@ -1,7 +1,7 @@
 import axios from "axios";
-import { Request, Response } from "express";
 
-export const googleOAuth = async (req: Request, res: Response) => {
+
+export const googleOAuth = async (req, res) => {
   console.log("googleOAuth-body", req.body);
   const googleToken = req.body.token;
   console.log("googleToken", googleToken);
