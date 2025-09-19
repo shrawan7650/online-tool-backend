@@ -4,7 +4,7 @@
     "module": "ESNext",
     // BEGIN: ed8c6549bwf9
     // END: ed8c6549bwf9
-    "ignoreDeprecations": "6.0", // Added to silence deprecation warning
+   
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
