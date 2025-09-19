@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import asyncHandler from 'express-async-handler';
-import { authMiddleware, subscriptionMiddleware, AuthRequest } from '../middleware/auth.js';
+import  { authMiddleware, subscriptionMiddleware, AuthRequest } from '../middleware/auth.js';
 import { Note } from '../models/Note.js';
 import pino from 'pino';
 
@@ -22,177 +22,205 @@ const UpdateNoteSchema = z.object({
 });
 
 // Get all notes for authenticated user
-router.get('/', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  
-  const notes = await Note.find({ userId })
-    .sort({ updatedAt: -1 })
-    .limit(1000); // Reasonable limit
-  
-  res.json({
-    ok: true,
-    notes
-  });
-}));
+router.get(
+  '/',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+    const notes = await Note.find({ userId }).sort({ updatedAt: -1 }).limit(1000);
+    res.json({ ok: true, notes });
+  })
+);
 
 // Create new note
-router.post('/', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  const validatedData = CreateNoteSchema.parse(req.body);
-  
-  const note = new Note({
-    ...validatedData,
-    userId
-  });
-  
-  await note.save();
-  
-  logger.info(`Note created: ${note._id} for user: ${userId}`);
-  
-  res.status(201).json({
-    ok: true,
-    note
-  });
-}));
+router.post(
+  '/',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+    const validatedData = CreateNoteSchema.parse(req.body);
+
+    const note = new Note({
+      ...validatedData,
+      userId
+    });
+
+    await note.save();
+
+    logger.info(`Note created: ${note._id} for user: ${userId}`);
+
+    res.status(201).json({
+      ok: true,
+      note
+    });
+  })
+);
 
 // Get single note
-router.get('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  const noteId = req.params.id;
-  
-  const note = await Note.findOne({ _id: noteId, userId });
-  
-  if (!note) {
-    return res.status(404).json({
-      ok: false,
-      error: {
-        code: 'NOTE_NOT_FOUND',
-        message: 'Note not found'
-      }
+router.get(
+  '/:id',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+    const noteId = req.params.id;
+
+    const note = await Note.findOne({ _id: noteId, userId });
+
+    if (!note) {
+      res.status(404).json({
+        ok: false,
+        error: {
+          code: 'NOTE_NOT_FOUND',
+          message: 'Note not found'
+        }
+      });
+      return;
+    }
+
+    res.json({
+      ok: true,
+      note
     });
-  }
-  
-  res.json({
-    ok: true,
-    note
-  });
-}));
+  })
+);
 
 // Update note
-router.put('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  const noteId = req.params.id;
-  const validatedData = UpdateNoteSchema.parse(req.body);
-  
-  const note = await Note.findOneAndUpdate(
-    { _id: noteId, userId },
-    { ...validatedData, updatedAt: new Date() },
-    { new: true }
-  );
-  
-  if (!note) {
-    return res.status(404).json({
-      ok: false,
-      error: {
-        code: 'NOTE_NOT_FOUND',
-        message: 'Note not found'
-      }
+router.put(
+  '/:id',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+    const noteId = req.params.id;
+    const validatedData = UpdateNoteSchema.parse(req.body);
+
+    const note = await Note.findOneAndUpdate(
+      { _id: noteId, userId },
+      { ...validatedData, updatedAt: new Date() },
+      { new: true }
+    );
+
+    if (!note) {
+      res.status(404).json({
+        ok: false,
+        error: {
+          code: 'NOTE_NOT_FOUND',
+          message: 'Note not found'
+        }
+      });
+      return;
+    }
+
+    logger.info(`Note updated: ${noteId} for user: ${userId}`);
+
+    res.json({
+      ok: true,
+      note
     });
-  }
-  
-  logger.info(`Note updated: ${noteId} for user: ${userId}`);
-  
-  res.json({
-    ok: true,
-    note
-  });
-}));
+  })
+);
 
 // Delete note
-router.delete('/:id', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  const noteId = req.params.id;
-  
-  const note = await Note.findOneAndDelete({ _id: noteId, userId });
-  
-  if (!note) {
-    return res.status(404).json({
-      ok: false,
-      error: {
-        code: 'NOTE_NOT_FOUND',
-        message: 'Note not found'
-      }
+router.delete(
+  '/:id',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+    const noteId = req.params.id;
+
+    const note = await Note.findOneAndDelete({ _id: noteId, userId });
+
+    if (!note) {
+      res.status(404).json({
+        ok: false,
+        error: {
+          code: 'NOTE_NOT_FOUND',
+          message: 'Note not found'
+        }
+      });
+      return;
+    }
+
+    logger.info(`Note deleted: ${noteId} for user: ${userId}`);
+
+    res.json({
+      ok: true,
+      message: 'Note deleted successfully'
     });
-  }
-  
-  logger.info(`Note deleted: ${noteId} for user: ${userId}`);
-  
-  res.json({
-    ok: true,
-    message: 'Note deleted successfully'
-  });
-}));
+  })
+);
 
 // Export all notes
-router.get('/export', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  
-  const notes = await Note.find({ userId }).sort({ createdAt: -1 });
-  
-  res.json({
-    ok: true,
-    notes,
-    exportedAt: new Date().toISOString(),
-    totalNotes: notes.length
-  });
-}));
+router.get(
+  '/export',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+
+    const notes = await Note.find({ userId }).sort({ createdAt: -1 });
+
+    res.json({
+      ok: true,
+      notes,
+      exportedAt: new Date().toISOString(),
+      totalNotes: notes.length
+    });
+  })
+);
 
 // Bulk import notes
-router.post('/import', authMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-  const userId = req.user!._id;
-  const { notes } = z.object({
-    notes: z.array(CreateNoteSchema)
-  }).parse(req.body);
-  
-  if (notes.length > 100) {
-    return res.status(400).json({
-      ok: false,
-      error: {
-        code: 'TOO_MANY_NOTES',
-        message: 'Cannot import more than 100 notes at once'
-      }
+router.post(
+  '/import',
+  authMiddleware,
+  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+    const userId = req.user!._id;
+    const { notes } = z
+      .object({
+        notes: z.array(CreateNoteSchema)
+      })
+      .parse(req.body);
+
+    if (notes.length > 100) {
+      res.status(400).json({
+        ok: false,
+        error: {
+          code: 'TOO_MANY_NOTES',
+          message: 'Cannot import more than 100 notes at once'
+        }
+      });
+      return;
+    }
+
+    const notesToCreate = notes.map(note => ({
+      ...note,
+      userId
+    }));
+
+    const createdNotes = await Note.insertMany(notesToCreate);
+
+    logger.info(`Bulk import: ${createdNotes.length} notes for user: ${userId}`);
+
+    res.status(201).json({
+      ok: true,
+      imported: createdNotes.length,
+      notes: createdNotes
     });
-  }
-  
-  const notesToCreate = notes.map(note => ({
-    ...note,
-    userId
-  }));
-  
-  const createdNotes = await Note.insertMany(notesToCreate);
-  
-  logger.info(`Bulk import: ${createdNotes.length} notes for user: ${userId}`);
-  
-  res.status(201).json({
-    ok: true,
-    imported: createdNotes.length,
-    notes: createdNotes
-  });
-}));
+  })
+);
 
 export default router;
 
-
-// example of  subscriptionMiddleware
-// router.get('/export', authMiddleware, subscriptionMiddleware, asyncHandler(async (req: AuthRequest, res) => {
-//   const userId = req.user!._id;
-  
-//   const notes = await Note.find({ userId }).sort({ createdAt: -1 });
-  
-//   res.json({
-//     ok: true,
-//     notes,
-//     exportedAt: new Date().toISOString(),
-//     totalNotes: notes.length
-//   });
-// }));
+// Example with subscriptionMiddleware
+// router.get('/export',
+//   authMiddleware,
+//   subscriptionMiddleware,
+//   asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+//     const userId = req.user!._id;
+//     const notes = await Note.find({ userId }).sort({ createdAt: -1 });
+//     res.json({
+//       ok: true,
+//       notes,
+//       exportedAt: new Date().toISOString(),
+//       totalNotes: notes.length
+//     });
+//   })
+// );
