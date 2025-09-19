@@ -3,8 +3,9 @@
     "target": "ES2022",
     "module": "ESNext",
     // BEGIN: ed8c6549bwf9
+    "ignoreDeprecations": "none", // Changed to valid value
     // END: ed8c6549bwf9
-   
+  
     "moduleResolution": "Node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,

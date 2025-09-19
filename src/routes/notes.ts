@@ -1,7 +1,7 @@
 import { Router, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import asyncHandler from 'express-async-handler';
-import  { authMiddleware, subscriptionMiddleware, AuthRequest } from '../middleware/auth.js';
+import  { authMiddleware } from '../middleware/auth.js';
 import { Note } from '../models/Note.js';
 import pino from 'pino';
 
@@ -21,11 +21,13 @@ const UpdateNoteSchema = z.object({
   tags: z.array(z.string().max(50)).max(20).optional()
 });
 
+
+
 // Get all notes for authenticated user
 router.get(
   '/',
   authMiddleware,
-  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!._id;
     const notes = await Note.find({ userId }).sort({ updatedAt: -1 }).limit(1000);
     res.json({ ok: true, notes });
@@ -36,7 +38,7 @@ router.get(
 router.post(
   '/',
   authMiddleware,
-  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!._id;
     const validatedData = CreateNoteSchema.parse(req.body);
 
@@ -60,7 +62,7 @@ router.post(
 router.get(
   '/:id',
   authMiddleware,
-  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!._id;
     const noteId = req.params.id;
 
@@ -88,7 +90,7 @@ router.get(
 router.put(
   '/:id',
   authMiddleware,
-  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!._id;
     const noteId = req.params.id;
     const validatedData = UpdateNoteSchema.parse(req.body);
@@ -123,7 +125,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!._id;
     const noteId = req.params.id;
 
@@ -153,7 +155,7 @@ router.delete(
 router.get(
   '/export',
   authMiddleware,
-  asyncHandler(async (req: AuthRequest, res: Response): Promise<void> => {
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
     const userId = req.user!._id;
 
     const notes = await Note.find({ userId }).sort({ createdAt: -1 });
