@@ -171,9 +171,20 @@ router.post('/refresh', asyncHandler(async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
-  res.clearCookie('inspitech_access_token');
-  res.clearCookie('inspitech_refresh_token');
+  const isProd = process.env.NODE_ENV === 'production';
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'None' : 'Lax',
+    path: '/'
+  };
+
+  res.clearCookie('inspitech_access_token', cookieOptions);
+  res.clearCookie('inspitech_refresh_token', cookieOptions);
+
   res.json({ ok: true, message: 'Logged out successfully' });
 });
+
 
 export default router;
