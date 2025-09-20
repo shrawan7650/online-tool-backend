@@ -51,10 +51,8 @@ app.use(
     crossOriginEmbedderPolicy: false,
   })
 );
-const allowedOrigins = [
-  "http://localhost:5173",   // dev
-  "https://online-tool-frontend.vercel.app", // production
-];
+const allowedOrigins = [process.env.CORS_ORIGIN_DEVELOPMENT,  
+  process.env.CORS_ORIGIN_PRODUCTION];
 // CORS
 app.use(
   cors({
