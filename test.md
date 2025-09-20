@@ -193,7 +193,7 @@ A comprehensive, production-ready web application providing essential developer 
 
    **Frontend (.env)**:
    ```env
-   VITE_API_BASE_URL=http://localhost:8080
+   VITE_API_BASE_URL_PRODUCTION=http://localhost:8080
    VITE_GOOGLE_CLIENT_ID=your-google-client-id
    VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxxxxxx
    VITE_ENABLE_ADS=false
@@ -261,7 +261,7 @@ vercel --prod
 
 **Environment Variables**:
 ```env
-VITE_API_BASE_URL=https://your-backend.railway.app
+VITE_API_BASE_URL_PRODUCTION=https://your-backend.railway.app
 VITE_GOOGLE_CLIENT_ID=your-google-client-id
 VITE_RAZORPAY_KEY_ID=rzp_live_xxxxxxxxxxxxxxxx
 VITE_ENABLE_ADS=true

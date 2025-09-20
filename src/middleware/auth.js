@@ -15,15 +15,20 @@ const logger = createLogger({
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    console.log("Auth middleware token:", token);
+    // Try cookie first
+    let token = req.cookies?.inspitech_access_token;
+
+    // Fallback to Authorization header
+    if (!token) {
+      token = req.header("Authorization")?.replace("Bearer ", "");
+    }
 
     if (!token) {
       return res.status(401).json({
         ok: false,
         error: {
-          code: 'NO_TOKEN',
-          message: 'Access denied. No token provided.'
+          code: "NO_TOKEN",
+          message: "Access denied. No token provided."
         }
       });
     }
@@ -35,33 +40,34 @@ export const authMiddleware = async (req, res, next) => {
       return res.status(401).json({
         ok: false,
         error: {
-          code: 'INVALID_TOKEN',
-          message: 'Invalid token. User not found.'
+          code: "INVALID_TOKEN",
+          message: "Invalid token. User not found."
         }
       });
     }
 
     req.user = user;
     next();
-  } catch (error) {
-    logger.error('Auth middleware error:', error);
 
-    if (error.name === 'TokenExpiredError') {
+  } catch (error) {
+    logger.error("Auth middleware error:", error);
+
+    if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         ok: false,
         error: {
-          code: 'TOKEN_EXPIRED',
-          message: 'Token has expired. Please login again.'
+          code: "TOKEN_EXPIRED",
+          message: "Token has expired. Please login again."
         }
       });
     }
 
-    if (error.name === 'JsonWebTokenError') {
+    if (error.name === "JsonWebTokenError") {
       return res.status(401).json({
         ok: false,
         error: {
-          code: 'INVALID_TOKEN',
-          message: 'Invalid token format.'
+          code: "INVALID_TOKEN",
+          message: "Invalid token format."
         }
       });
     }
@@ -69,8 +75,8 @@ export const authMiddleware = async (req, res, next) => {
     res.status(500).json({
       ok: false,
       error: {
-        code: 'AUTH_ERROR',
-        message: 'Authentication failed.'
+        code: "AUTH_ERROR",
+        message: "Authentication failed."
       }
     });
   }
