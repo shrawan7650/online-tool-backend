@@ -12,6 +12,7 @@ import clipboardRoutes from './routes/clipboard.js';
 import toolsRoutes from './routes/tools.js';
 import filesRoutes from './routes/files.js';
 import schedulerRoutes from './routes/scheduler.js';
+import mediumExtractRoutes from './routes/mediumExtractor.js'
 import notesRoutes from './routes/notes.js';
 import authRoutes from './routes/auth.js';
 // import subscriptionRoutes from './routes/subscription.js';
@@ -56,13 +57,14 @@ const allowedOrigins = [process.env.CORS_ORIGIN_DEVELOPMENT,
 // CORS
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    // origin: function (origin, callback) {
+    //   if (!origin || allowedOrigins.includes(origin)) {
+    //     callback(null, true);
+    //   } else {
+    //     callback(new Error("Not allowed by CORS"));
+    //   }
+    // },
+    origin: "http://localhost:5173",
     credentials: true,
     methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -109,6 +111,7 @@ app.use('/api/tools', toolsRoutes);
 app.use('/api/files', filesRoutes);
 app.use('/api/scheduler', schedulerRoutes);
 app.use('/api/notes', notesRoutes);
+app.use('/api/extract-medium', mediumExtractRoutes);
 app.use('/healthz', healthRoutes);
 app.use('/metrics', metricsRoutes);
 
@@ -133,6 +136,7 @@ app.use('*', (req, res) => {
     },
   });
 });
+// Clear cache endpoint (for development)
 
 // Global error handler
 app.use(errorHandler);
